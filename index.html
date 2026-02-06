@@ -361,7 +361,28 @@
 
   </section>
 </main>
+<div id="authModal" style="position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:16px; background:rgba(0,0,0,.55); backdrop-filter: blur(10px); z-index:9999;">
+  <div style="max-width:420px; width:100%; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:var(--shadow);">
+    <h2 style="margin:0 0 6px; font-size:16px;">Rust Rebels Login</h2>
+    <div style="color:var(--muted); font-size:12px; margin-bottom:10px;">Log in to sync across iPhone/iPad.</div>
 
+    <label>Email</label>
+    <input id="authEmail" type="email" placeholder="you@example.com" />
+
+    <label>Password</label>
+    <input id="authPassword" type="password" placeholder="••••••••" />
+
+    <div style="height:12px;"></div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="btn primary" id="btnLogin">Log in</button>
+      <button class="btn" id="btnSignup">Sign up</button>
+      <button class="btn ghost" id="btnOffline">Use offline (no sync)</button>
+    </div>
+
+    <div id="authMsg" style="margin-top:10px; font-size:12px; color:var(--muted);"></div>
+  </div>
+</div>
+  
 <footer>
   <div class="footerInner">
     <div class="small">Local-only storage. No GST. Default rate: <b id="rateFooter">$75</b>/hr</div>
@@ -1129,7 +1150,831 @@
     renderAll();
   }
 
+<script>
+(() => {
+  /***********************
+   * 1) SUPABASE CONFIG  *
+   ***********************/
+  const SUPABASE_URL = "https://byeugnubtwdnlyzxcegf.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_zc6vOE2kCKmOLOLQUr1P5Q_nQHO1LzI";
+
+  // If you choose "offline mode", app works like before (device-only)
+  let OFFLINE_MODE = false;
+
+  const sb = (window.supabase && SUPABASE_URL.includes("http"))
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+  /***********************
+   * 2) LOCAL FALLBACK   *
+   ***********************/
+  const STORAGE_KEY = "rr_quotes_hours_v2_local_cache";
+
+  const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+  const money = (n) => Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const hoursFromTimes = (start, end, breakMin) => {
+    if(!start || !end) return null;
+    const [sh, sm] = start.split(":").map(Number);
+    const [eh, em] = end.split(":").map(Number);
+    let mins = (eh*60+em) - (sh*60+sm);
+    if(mins < 0) mins += 24*60;
+    mins -= Number(breakMin || 0);
+    return Math.max(0, mins/60);
+  };
+
+  const state = loadLocalCache();
+
+  function loadLocalCache(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      try { return JSON.parse(raw); } catch {}
+    }
+    return {
+      settings: {
+        defaultRate: 75,
+        biz: { name: "Rust Rebels", phone:"", email:"", address:"" }
+      },
+      jobs: []
+    };
+  }
+
+  function saveLocalCache(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  /***********************
+   * 3) DOM HOOKS        *
+   ***********************/
+  const authModal = document.getElementById("authModal");
+  const authEmail = document.getElementById("authEmail");
+  const authPassword = document.getElementById("authPassword");
+  const authMsg = document.getElementById("authMsg");
+  const btnLogin = document.getElementById("btnLogin");
+  const btnSignup = document.getElementById("btnSignup");
+  const btnOffline = document.getElementById("btnOffline");
+
+  const jobList = document.getElementById("jobList");
+  const jobCard = document.getElementById("jobCard");
+  const settingsCard = document.getElementById("settingsCard");
+  const kpis = document.getElementById("kpis");
+
+  const search = document.getElementById("search");
+  const filterStatus = document.getElementById("filterStatus");
+
+  const defaultRate = document.getElementById("defaultRate");
+  const bizName = document.getElementById("bizName");
+  const bizPhone = document.getElementById("bizPhone");
+  const bizEmail = document.getElementById("bizEmail");
+  const bizAddress = document.getElementById("bizAddress");
+  const rateFooter = document.getElementById("rateFooter");
+  const newJobBtn = document.getElementById("newJobBtn");
+  const closeJobBtn = document.getElementById("closeJobBtn");
+  const deleteJobBtn = document.getElementById("deleteJobBtn");
+  const saveJobBtn = document.getElementById("saveJobBtn");
+  const backupBtn = document.getElementById("backupBtn");
+  const wipeBtn = document.getElementById("wipeBtn");
+  const importFile = document.getElementById("importFile");
+  const exportCsvBtn = document.getElementById("exportCsvBtn");
+
+  const jobHeader = document.getElementById("jobHeader");
+  const jobSub = document.getElementById("jobSub");
+  const jobClient = document.getElementById("jobClient");
+  const jobTitle = document.getElementById("jobTitle");
+  const jobDesc = document.getElementById("jobDesc");
+  const jobLocation = document.getElementById("jobLocation");
+  const jobNotes = document.getElementById("jobNotes");
+  const jobStatus = document.getElementById("jobStatus");
+  const jobRate = document.getElementById("jobRate");
+
+  const tDate = document.getElementById("tDate");
+  const tRate = document.getElementById("tRate");
+  const tStart = document.getElementById("tStart");
+  const tEnd = document.getElementById("tEnd");
+  const tDuration = document.getElementById("tDuration");
+  const tBreak = document.getElementById("tBreak");
+  const tDesc = document.getElementById("tDesc");
+  const addTimeBtn = document.getElementById("addTimeBtn");
+  const timeTableBody = document.querySelector("#timeTable tbody");
+  const timeTotals = document.getElementById("timeTotals");
+
+  const mItem = document.getElementById("mItem");
+  const mQty = document.getElementById("mQty");
+  const mUnit = document.getElementById("mUnit");
+  const mSell = document.getElementById("mSell");
+  const mNote = document.getElementById("mNote");
+  const addMatBtn = document.getElementById("addMatBtn");
+  const matTableBody = document.querySelector("#matTable tbody");
+  const matTotals = document.getElementById("matTotals");
+
+  const pdfType = document.getElementById("pdfType");
+  const pdfItemised = document.getElementById("pdfItemised");
+  const pdfGroupDays = document.getElementById("pdfGroupDays");
+  const genPdfBtn = document.getElementById("genPdfBtn");
+
+  const tabs = Array.from(document.querySelectorAll(".tab"));
+  const tabPanels = {
+    details: document.getElementById("tab-details"),
+    time: document.getElementById("tab-time"),
+    materials: document.getElementById("tab-materials"),
+    pdf: document.getElementById("tab-pdf"),
+  };
+
+  let selectedJobId = null;
+  let currentUser = null;
+
+  /***********************
+   * 4) AUTH FLOW        *
+   ***********************/
+  function showAuth(show, msg=""){
+    if(!sb){ OFFLINE_MODE = true; show = false; }
+    authModal.style.display = show ? "flex" : "none";
+    authMsg.textContent = msg;
+  }
+
+  async function initAuth(){
+    if(!sb){
+      OFFLINE_MODE = true;
+      renderAll();
+      return;
+    }
+
+    const { data } = await sb.auth.getSession();
+    currentUser = data?.session?.user || null;
+
+    if(!currentUser){
+      showAuth(true, "Log in or sign up to enable sync.");
+      renderAll(); // still renders local cache
+    } else {
+      showAuth(false);
+      await cloudPullAll();      // load from cloud
+      renderAll();
+      startRealtime();           // keep devices in sync
+    }
+  }
+
+  btnOffline.addEventListener("click", () => {
+    OFFLINE_MODE = true;
+    showAuth(false);
+    renderAll();
+  });
+
+  btnSignup.addEventListener("click", async () => {
+    if(!sb) return;
+    authMsg.textContent = "Signing up…";
+    const email = authEmail.value.trim();
+    const password = authPassword.value;
+    const { error } = await sb.auth.signUp({ email, password });
+    authMsg.textContent = error ? error.message : "Check your email if confirmation is enabled, then log in.";
+  });
+
+  btnLogin.addEventListener("click", async () => {
+    if(!sb) return;
+    authMsg.textContent = "Logging in…";
+    const email = authEmail.value.trim();
+    const password = authPassword.value;
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if(error){
+      authMsg.textContent = error.message;
+      return;
+    }
+    currentUser = data.user;
+    showAuth(false);
+    await cloudPullAll();
+    renderAll();
+    startRealtime();
+  });
+
+  /***********************
+   * 5) CLOUD OPERATIONS *
+   ***********************/
+  function assertUser(){
+    if(OFFLINE_MODE) return null;
+    if(!currentUser) throw new Error("Not logged in");
+    return currentUser.id;
+  }
+
+  async function cloudPullAll(){
+    const userId = assertUser();
+    if(!userId) return;
+
+    // Load settings from local cache only (simpler). You can also store settings in Supabase later.
+    // Pull Jobs
+    const { data: jobs, error: ej } = await sb
+      .from("jobs")
+      .select("*")
+      .order("updated_at", { ascending: false });
+
+    if(ej) { console.error(ej); return; }
+
+    // Pull time entries + materials in one go
+    const { data: te, error: et } = await sb.from("time_entries").select("*");
+    const { data: ma, error: em } = await sb.from("materials").select("*");
+    if(et) console.error(et);
+    if(em) console.error(em);
+
+    // Merge into app state structure
+    const timeByJob = {};
+    (te || []).forEach(e => {
+      const jobId = e.job_id;
+      timeByJob[jobId] = timeByJob[jobId] || [];
+      timeByJob[jobId].push({
+        id: e.id,
+        date: e.work_date,
+        desc: e.description || "",
+        hours: Number(e.hours || 0),
+        rate: Number(e.rate || 0),
+        cost: Number(e.cost || 0),
+        start: "",
+        end: "",
+        breakMin: 0
+      });
+    });
+
+    const matsByJob = {};
+    (ma || []).forEach(m => {
+      const jobId = m.job_id;
+      matsByJob[jobId] = matsByJob[jobId] || [];
+      matsByJob[jobId].push({
+        id: m.id,
+        item: m.item || "",
+        qty: Number(m.qty || 0),
+        unit: Number(m.unit_cost || 0),
+        sell: null,
+        total: Number(m.total || 0),
+        note: m.note || ""
+      });
+    });
+
+    state.jobs = (jobs || []).map(j => ({
+      id: j.id,
+      client: j.client || "",
+      title: j.title || "",
+      desc: j.description || "",
+      location: j.location || "",
+      notes: j.notes || "",
+      status: j.status || "QUOTE",
+      rateOverride: (j.rate_override ?? ""),
+      createdAt: j.created_at,
+      updatedAt: j.updated_at,
+      timeEntries: timeByJob[j.id] || [],
+      materials: matsByJob[j.id] || []
+    }));
+
+    saveLocalCache(); // keep a local mirror
+  }
+
+  async function cloudUpsertJob(job){
+    const userId = assertUser();
+    if(!userId) return;
+
+    const payload = {
+      id: job.id, // keep same id
+      user_id: userId,
+      client: job.client,
+      title: job.title,
+      description: job.desc,
+      location: job.location,
+      notes: job.notes,
+      status: job.status,
+      rate_override: (job.rateOverride === "" ? null : job.rateOverride),
+      updated_at: new Date().toISOString()
+    };
+
+    const { error } = await sb.from("jobs").upsert(payload);
+    if(error) console.error(error);
+  }
+
+  async function cloudDeleteJob(jobId){
+    const userId = assertUser();
+    if(!userId) return;
+    const { error } = await sb.from("jobs").delete().eq("id", jobId);
+    if(error) console.error(error);
+  }
+
+  async function cloudInsertTime(jobId, entry){
+    const userId = assertUser();
+    if(!userId) return;
+
+    const payload = {
+      id: entry.id,
+      user_id: userId,
+      job_id: jobId,
+      work_date: entry.date,
+      description: entry.desc,
+      hours: entry.hours,
+      rate: entry.rate,
+      cost: entry.cost
+    };
+
+    const { error } = await sb.from("time_entries").insert(payload);
+    if(error) console.error(error);
+  }
+
+  async function cloudDeleteTime(entryId){
+    const userId = assertUser();
+    if(!userId) return;
+    const { error } = await sb.from("time_entries").delete().eq("id", entryId);
+    if(error) console.error(error);
+  }
+
+  async function cloudInsertMat(jobId, item){
+    const userId = assertUser();
+    if(!userId) return;
+
+    const payload = {
+      id: item.id,
+      user_id: userId,
+      job_id: jobId,
+      item: item.item,
+      qty: item.qty,
+      unit_cost: item.unit,
+      total: item.total,
+      note: item.note
+    };
+
+    const { error } = await sb.from("materials").insert(payload);
+    if(error) console.error(error);
+  }
+
+  async function cloudDeleteMat(itemId){
+    const userId = assertUser();
+    if(!userId) return;
+    const { error } = await sb.from("materials").delete().eq("id", itemId);
+    if(error) console.error(error);
+  }
+
+  /***********************
+   * 6) REALTIME SYNC    *
+   ***********************/
+  let rtStarted = false;
+  function startRealtime(){
+    if(OFFLINE_MODE || !sb || rtStarted) return;
+    rtStarted = true;
+
+    // When anything changes, just pull again (simple + reliable).
+    // Later we can optimize to merge incremental updates.
+    const ch = sb.channel("rr-sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "jobs" }, () => cloudPullAll().then(renderAll))
+      .on("postgres_changes", { event: "*", schema: "public", table: "time_entries" }, () => cloudPullAll().then(renderAll))
+      .on("postgres_changes", { event: "*", schema: "public", table: "materials" }, () => cloudPullAll().then(renderAll))
+      .subscribe();
+
+    // NOTE: If realtime doesn’t trigger, enable replication in Supabase:
+    // Database -> Replication -> enable for these tables.
+  }
+
+  /***********************
+   * 7) APP LOGIC        *
+   ***********************/
+  function getJob(id){ return state.jobs.find(j => j.id === id); }
+  function jobRateResolved(job){
+    const r = job.rateOverride;
+    return (r !== null && r !== undefined && r !== "") ? Number(r) : Number(state.settings.defaultRate || 0);
+  }
+
+  function calcLabor(job){
+    const entries = job.timeEntries || [];
+    let totalH = 0, total$ = 0;
+    for(const e of entries){ totalH += Number(e.hours||0); total$ += Number(e.cost||0); }
+    return { hours: totalH, cost: total$ };
+  }
+  function calcMaterials(job){
+    const items = job.materials || [];
+    let total = 0;
+    for(const it of items){ total += Number(it.total||0); }
+    return { cost: total };
+  }
+
+  function badgeClass(status){
+    if(status==="QUOTE") return "quote";
+    if(status==="IN_PROGRESS") return "progress";
+    if(status==="COMPLETED") return "done";
+    if(status==="INVOICED") return "invoiced";
+    return "";
+  }
+  function statusLabel(status){
+    return status==="IN_PROGRESS" ? "In Progress" : status.charAt(0)+status.slice(1).toLowerCase().replace("_"," ");
+  }
+
+  function initSettings(){
+    defaultRate.value = state.settings.defaultRate ?? 75;
+    bizName.value = state.settings.biz?.name ?? "Rust Rebels";
+    bizPhone.value = state.settings.biz?.phone ?? "";
+    bizEmail.value = state.settings.biz?.email ?? "";
+    bizAddress.value = state.settings.biz?.address ?? "";
+    rateFooter.textContent = "$" + money(state.settings.defaultRate ?? 75);
+  }
+
+  defaultRate.addEventListener("input", () => { state.settings.defaultRate = Number(defaultRate.value||0); saveLocalCache(); renderAll(); });
+  for(const [el, key] of [[bizName,"name"],[bizPhone,"phone"],[bizEmail,"email"],[bizAddress,"address"]]){
+    el.addEventListener("input", () => {
+      state.settings.biz = state.settings.biz || {};
+      state.settings.biz[key] = el.value;
+      saveLocalCache(); renderAll();
+    });
+  }
+
+  newJobBtn.addEventListener("click", async () => {
+    const now = new Date().toISOString();
+    const job = {
+      id: uid(),
+      client: "",
+      title: "New job",
+      desc: "",
+      location: "",
+      notes: "",
+      status: "QUOTE",
+      rateOverride: "",
+      createdAt: now,
+      updatedAt: now,
+      timeEntries: [],
+      materials: []
+    };
+    state.jobs.unshift(job);
+    selectedJobId = job.id;
+    saveLocalCache();
+    renderAll();
+    openJob(job.id);
+
+    await cloudUpsertJob(job); // live save
+  });
+
+  closeJobBtn.addEventListener("click", () => { selectedJobId = null; renderAll(); });
+
+  deleteJobBtn.addEventListener("click", async () => {
+    const job = getJob(selectedJobId);
+    if(!job) return;
+    if(confirm("Delete this job? This cannot be undone.")){
+      const id = selectedJobId;
+      state.jobs = state.jobs.filter(j => j.id !== id);
+      selectedJobId = null;
+      saveLocalCache();
+      renderAll();
+      await cloudDeleteJob(id);
+    }
+  });
+
+  saveJobBtn.addEventListener("click", async () => {
+    const job = getJob(selectedJobId);
+    if(!job) return;
+
+    job.client = jobClient.value.trim();
+    job.title = jobTitle.value.trim();
+    job.desc = jobDesc.value.trim();
+    job.location = jobLocation.value.trim();
+    job.notes = jobNotes.value.trim();
+    job.status = jobStatus.value;
+    job.rateOverride = jobRate.value === "" ? "" : Number(jobRate.value);
+    job.updatedAt = new Date().toISOString();
+
+    saveLocalCache();
+    renderAll();
+    await cloudUpsertJob(job);
+    alert("Saved.");
+  });
+
+  search.addEventListener("input", renderAll);
+  filterStatus.addEventListener("change", renderAll);
+
+  addTimeBtn.addEventListener("click", async () => {
+    const job = getJob(selectedJobId);
+    if(!job) return;
+
+    const date = tDate.value || new Date().toISOString().slice(0,10);
+    const rate = Number(tRate.value || jobRateResolved(job));
+    const br = Number(tBreak.value || 0);
+
+    let hrs = null;
+    const fromTimes = hoursFromTimes(tStart.value, tEnd.value, br);
+    if(fromTimes !== null) hrs = fromTimes;
+
+    const dur = tDuration.value !== "" ? Number(tDuration.value) : null;
+    if(dur !== null && !isNaN(dur) && dur > 0) hrs = (dur - (br/60));
+
+    if(hrs === null || isNaN(hrs) || hrs <= 0){
+      alert("Enter start/end time OR a duration (hours).");
+      return;
+    }
+
+    const desc = tDesc.value.trim() || "Work";
+    const cost = hrs * rate;
+
+    const entry = {
+      id: uid(),
+      date,
+      desc,
+      hours: Number(hrs.toFixed(2)),
+      rate,
+      cost: Number(cost.toFixed(2)),
+      start: tStart.value || "",
+      end: tEnd.value || "",
+      breakMin: br
+    };
+
+    job.timeEntries.push(entry);
+    job.updatedAt = new Date().toISOString();
+
+    tStart.value=""; tEnd.value=""; tDuration.value=""; tDesc.value=""; tBreak.value="0";
+
+    saveLocalCache();
+    renderAll();
+    await cloudUpsertJob(job);
+    await cloudInsertTime(job.id, entry);
+  });
+
+  addMatBtn.addEventListener("click", async () => {
+    const job = getJob(selectedJobId);
+    if(!job) return;
+
+    const itemName = mItem.value.trim();
+    if(!itemName){ alert("Enter an item name."); return; }
+
+    const qty = Number(mQty.value || 1);
+    const unit = Number(mUnit.value || 0);
+    const sellOverride = (mSell.value === "" ? null : Number(mSell.value));
+    const total = sellOverride !== null ? sellOverride : qty * unit;
+
+    const item = {
+      id: uid(),
+      item: itemName,
+      qty: Number(qty.toFixed(2)),
+      unit: Number(unit.toFixed(2)),
+      sell: sellOverride,
+      total: Number(total.toFixed(2)),
+      note: mNote.value.trim()
+    };
+
+    job.materials.push(item);
+    job.updatedAt = new Date().toISOString();
+
+    mItem.value=""; mQty.value="1"; mUnit.value="0"; mSell.value=""; mNote.value="";
+
+    saveLocalCache();
+    renderAll();
+    await cloudUpsertJob(job);
+    await cloudInsertMat(job.id, item);
+  });
+
+  // Remove time/material (cloud + local)
+  function wireRemovalButtons(){
+    const job = getJob(selectedJobId);
+    if(!job) return;
+
+    document.querySelectorAll("#timeTable button[data-del]").forEach(btn => {
+      btn.onclick = async () => {
+        const id = btn.getAttribute("data-del");
+        job.timeEntries = (job.timeEntries||[]).filter(x => x.id !== id);
+        job.updatedAt = new Date().toISOString();
+        saveLocalCache(); renderAll();
+        await cloudDeleteTime(id);
+        await cloudUpsertJob(job);
+      };
+    });
+
+    document.querySelectorAll("#matTable button[data-del]").forEach(btn => {
+      btn.onclick = async () => {
+        const id = btn.getAttribute("data-del");
+        job.materials = (job.materials||[]).filter(x => x.id !== id);
+        job.updatedAt = new Date().toISOString();
+        saveLocalCache(); renderAll();
+        await cloudDeleteMat(id);
+        await cloudUpsertJob(job);
+      };
+    });
+  }
+
+  // Tabs
+  tabs.forEach(btn => btn.addEventListener("click", () => {
+    tabs.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    const name = btn.dataset.tab;
+    Object.entries(tabPanels).forEach(([k, el]) => el.classList.toggle("hidden", k !== name));
+  }));
+
+  // Backup/export still works (local mirror)
+  backupBtn.addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+    downloadBlob(blob, `rust-rebels-backup-${new Date().toISOString().slice(0,10)}.json`);
+  });
+  importFile.addEventListener("change", async () => {
+    const f = importFile.files?.[0];
+    if(!f) return;
+    try{
+      const txt = await f.text();
+      const obj = JSON.parse(txt);
+      if(!obj || !obj.settings || !obj.jobs) throw new Error("Invalid backup");
+      if(confirm("Import backup into THIS device mirror? (You can then upload to cloud by saving each job)")){
+        state.settings = obj.settings;
+        state.jobs = obj.jobs;
+        selectedJobId = null;
+        saveLocalCache();
+        renderAll();
+      }
+    }catch(e){
+      alert("Could not import: " + e.message);
+    }finally{
+      importFile.value = "";
+    }
+  });
+
+  wipeBtn.addEventListener("click", async () => {
+    if(confirm("Clear ALL local data on this device?")){
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+  });
+
+  exportCsvBtn.addEventListener("click", () => {
+    const rows = [];
+    rows.push(["JobID","Client","Title","Status","Rate","LaborHours","LaborCost","MaterialsCost","Total","UpdatedAt"].join(","));
+    for(const j of state.jobs){
+      const r = jobRateResolved(j);
+      const labor = calcLabor(j);
+      const mats = calcMaterials(j);
+      const total = labor.cost + mats.cost;
+      rows.push([
+        j.id, csv(j.client), csv(j.title), j.status, r,
+        labor.hours.toFixed(2), labor.cost.toFixed(2), mats.cost.toFixed(2), total.toFixed(2), j.updatedAt
+      ].join(","));
+    }
+    const blob = new Blob([rows.join("\n")], {type:"text/csv"});
+    downloadBlob(blob, `rust-rebels-jobs-${new Date().toISOString().slice(0,10)}.csv`);
+  });
+
+  function csv(s){
+    const x = (s ?? "").toString().replaceAll('"','""');
+    return `"${x}"`;
+  }
+  function downloadBlob(blob, filename){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 1500);
+  }
+
+  // Rendering
+  function filteredJobs(){
+    const q = (search.value||"").trim().toLowerCase();
+    const st = filterStatus.value || "";
+    return state.jobs.filter(j => {
+      const hay = `${j.client} ${j.title} ${j.desc} ${j.notes} ${j.location}`.toLowerCase();
+      const okQ = !q || hay.includes(q);
+      const okS = !st || j.status === st;
+      return okQ && okS;
+    });
+  }
+
+  function renderKPIs(){
+    const visible = filteredJobs();
+    let active=0, quoted=0, completed=0, total$=0;
+    for(const j of visible){
+      if(j.status==="IN_PROGRESS") active++;
+      if(j.status==="QUOTE") quoted++;
+      if(j.status==="COMPLETED" || j.status==="INVOICED") completed++;
+      const labor = calcLabor(j);
+      const mats = calcMaterials(j);
+      total$ += labor.cost + mats.cost;
+    }
+    kpis.innerHTML = `
+      <span class="pill">Jobs: <b>${visible.length}</b></span>
+      <span class="pill">Quotes: <b>${quoted}</b></span>
+      <span class="pill">Active: <b>${active}</b></span>
+      <span class="pill">Done: <b>${completed}</b></span>
+      <span class="pill">Total value: <b>$${money(total$)}</b></span>
+    `;
+  }
+
+  function renderJobList(){
+    const jobs = filteredJobs();
+    jobList.innerHTML = "";
+    if(jobs.length === 0){
+      jobList.innerHTML = `<div class="muted" style="padding:10px 2px">No jobs yet. Tap “New Job”.</div>`;
+      return;
+    }
+    for(const j of jobs){
+      const labor = calcLabor(j);
+      const mats = calcMaterials(j);
+      const total = labor.cost + mats.cost;
+      const el = document.createElement("div");
+      el.className = "jobItem";
+      el.innerHTML = `
+        <div>
+          <div class="jobTitle">${escape(j.title || "Job")}</div>
+          <div class="jobMeta">${escape(j.client || "No client")} • $${money(total)} • ${money(labor.hours)}h</div>
+        </div>
+        <div class="badge ${badgeClass(j.status)}">${escape(statusLabel(j.status || "QUOTE"))}</div>
+      `;
+      el.addEventListener("click", () => openJob(j.id));
+      jobList.appendChild(el);
+    }
+  }
+
+  function openJob(id){
+    selectedJobId = id;
+    renderAll();
+    jobCard.scrollIntoView({behavior:"smooth", block:"start"});
+  }
+
+  function renderSelectedJob(){
+    const job = getJob(selectedJobId);
+    jobCard.classList.toggle("hidden", !job);
+    settingsCard.classList.toggle("hidden", !!job);
+
+    if(!job) return;
+
+    jobHeader.textContent = job.title || "Job";
+    jobSub.textContent = (job.client ? job.client + " • " : "") + "Updated: " + (job.updatedAt ? job.updatedAt.slice(0,10) : "");
+
+    jobClient.value = job.client || "";
+    jobTitle.value = job.title || "";
+    jobDesc.value = job.desc || "";
+    jobLocation.value = job.location || "";
+    jobNotes.value = job.notes || "";
+    jobStatus.value = job.status || "QUOTE";
+    jobRate.value = job.rateOverride === "" ? "" : (job.rateOverride ?? "");
+
+    tRate.value = jobRateResolved(job);
+    if(!tDate.value) tDate.value = new Date().toISOString().slice(0,10);
+
+    renderTime(job);
+    renderMats(job);
+
+    if(job.status === "QUOTE") pdfType.value = "QUOTE";
+    else pdfType.value = "INVOICE";
+
+    wireRemovalButtons();
+  }
+
+  function renderTime(job){
+    const entries = (job.timeEntries || []).slice().sort((a,b)=> (b.date||"").localeCompare(a.date||""));
+    timeTableBody.innerHTML = "";
+    let totalH=0, total$=0;
+    for(const e of entries){
+      totalH += Number(e.hours||0);
+      total$ += Number(e.cost||0);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escape(e.date||"")}</td>
+        <td>${escape(e.desc||"")}</td>
+        <td class="right">${money(e.hours||0)}</td>
+        <td class="right">$${money(e.cost||0)}</td>
+        <td class="right"><button class="btn ghost" data-del="${e.id}" style="padding:8px 10px">Remove</button></td>
+      `;
+      timeTableBody.appendChild(tr);
+    }
+    timeTotals.innerHTML = `Total: <b>${money(totalH)}h</b> • Labour: <b>$${money(total$)}</b>`;
+  }
+
+  function renderMats(job){
+    const items = (job.materials || []);
+    matTableBody.innerHTML = "";
+    let total=0;
+    for(const it of items){
+      total += Number(it.total||0);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escape(it.item||"")}${it.note ? `<div class="muted">${escape(it.note)}</div>` : ""}</td>
+        <td class="right">${money(it.qty||0)}</td>
+        <td class="right">$${money(it.total||0)}</td>
+        <td class="right"><button class="btn ghost" data-del="${it.id}" style="padding:8px 10px">Remove</button></td>
+      `;
+      matTableBody.appendChild(tr);
+    }
+    matTotals.innerHTML = `Materials: <b>$${money(total)}</b>`;
+  }
+
+  function escape(s){ return (s ?? "").toString().replaceAll("<","&lt;").replaceAll(">","&gt;"); }
+
+  function renderAll(){
+    initSettings();
+    renderKPIs();
+    renderJobList();
+    renderSelectedJob();
+    saveLocalCache();
+  }
+
+  /***********************
+   * 8) PDF: keep yours  *
+   ***********************/
+  // Your existing PDF code should remain as-is above this script in your file.
+  // If your old version had PDF in this script, keep it (don’t delete it).
+  // The sync changes don’t affect PDF.
+
+  // IMPORTANT NOTE:
+  // If you replaced your whole script and lost the PDF function,
+  // tell me and I’ll paste the PDF part back in cleanly.
+
+  // Start
+  renderAll();
+  initAuth();
+
 })();
 </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </body>
 </html>
