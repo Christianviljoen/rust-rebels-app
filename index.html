@@ -1,440 +1,81 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rust Rebels | Quotes & Hours</title>
-  <meta name="theme-color" content="#111111" />
-  <style>
-    :root{
-      --bg:#0b0b0c; --card:#141416; --muted:#9aa0a6; --text:#f2f3f4;
-      --accent:#f5b301; --danger:#ff5a5f; --ok:#4ade80; --line:#24262a;
-      --shadow: 0 10px 25px rgba(0,0,0,.35);
-      --radius: 16px;
-      --font: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-    }
-    @media (prefers-color-scheme: light){
-      :root{ --bg:#f6f7f8; --card:#ffffff; --muted:#5f6368; --text:#111; --line:#e8eaed; --shadow: 0 10px 25px rgba(0,0,0,.08); }
-    }
-    *{ box-sizing:border-box; }
-    body{ margin:0; background:var(--bg); color:var(--text); font-family:var(--font); }
-    header{
-      position:sticky; top:0; z-index:20;
-      background: linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,0));
-      backdrop-filter: blur(10px);
-      padding:14px 16px 10px;
-    }
-    .brand{ display:flex; align-items:center; gap:10px; }
-    .logo{
-      width:34px; height:34px; border-radius:10px;
-      background: radial-gradient(circle at 30% 30%, var(--accent), #ff6a00);
-      box-shadow: var(--shadow);
-    }
-    h1{ font-size:16px; margin:0; letter-spacing:.2px; }
-    .sub{ font-size:12px; color:var(--muted); margin-top:2px; }
-
-    main{ padding: 6px 16px 90px; max-width: 980px; margin: 0 auto; }
-    .row{ display:flex; gap:12px; flex-wrap:wrap; }
-    .card{
-      background:var(--card); border:1px solid var(--line);
-      border-radius:var(--radius); box-shadow:var(--shadow);
-      padding:14px;
-    }
-    .card h2{ margin:0 0 10px; font-size:14px; }
-    .grow{ flex: 1 1 340px; }
-    .side{ flex: 1 1 260px; }
-
-    label{ display:block; font-size:12px; color:var(--muted); margin: 10px 0 6px; }
-    input, textarea, select{
-      width:100%; padding:12px 12px; border-radius:12px;
-      border:1px solid var(--line); background:transparent; color:var(--text);
-      outline:none;
-    }
-    textarea{ min-height:84px; resize:vertical; }
-    .btn{
-      border:none; border-radius:12px; padding:12px 12px; font-weight:600;
-      background: var(--line); color:var(--text);
-      cursor:pointer;
-    }
-    .btn.primary{ background: var(--accent); color:#111; }
-    .btn.danger{ background: var(--danger); color:white; }
-    .btn.ghost{ background: transparent; border:1px solid var(--line); }
-    .btn:active{ transform: translateY(1px); }
-
-    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; }
-    .pill{
-      display:inline-flex; gap:8px; align-items:center;
-      padding:8px 10px; border:1px solid var(--line); border-radius:999px;
-      color:var(--muted); font-size:12px;
-    }
-    .jobs{ display:flex; flex-direction:column; gap:10px; }
-    .jobItem{
-      display:flex; gap:10px; align-items:flex-start; justify-content:space-between;
-      padding:12px; border:1px solid var(--line); border-radius:14px;
-      background: rgba(255,255,255,0.02);
-      cursor:pointer;
-    }
-    .jobTitle{ font-weight:700; font-size:14px; margin:0; }
-    .jobMeta{ margin:4px 0 0; font-size:12px; color:var(--muted); }
-    .badge{ font-size:11px; padding:6px 10px; border-radius:999px; border:1px solid var(--line); color:var(--muted); white-space:nowrap; }
-    .badge.quote{ border-color: rgba(245,179,1,.4); color: var(--accent); }
-    .badge.progress{ border-color: rgba(96,165,250,.35); color: #60a5fa; }
-    .badge.done{ border-color: rgba(74,222,128,.35); color: var(--ok); }
-    .badge.invoiced{ border-color: rgba(168,85,247,.35); color: #a855f7; }
-
-    .tabs{ display:flex; gap:8px; flex-wrap:wrap; margin: 6px 0 12px; }
-    .tab{ padding:10px 12px; border-radius:999px; border:1px solid var(--line); background:transparent; color:var(--muted); cursor:pointer; font-weight:700; font-size:12px; }
-    .tab.active{ background: var(--line); color: var(--text); }
-
-    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    @media (max-width:720px){ .grid2{ grid-template-columns:1fr; } }
-
-    table{ width:100%; border-collapse:collapse; }
-    th, td{ text-align:left; font-size:12px; padding:10px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
-    th{ color:var(--muted); font-weight:700; }
-    .right{ text-align:right; }
-    .muted{ color:var(--muted); }
-    .kpi{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
-    .kpi .pill b{ color:var(--text); }
-
-    footer{
-      position:fixed; bottom:0; left:0; right:0;
-      background: rgba(0,0,0,.35);
-      backdrop-filter: blur(10px);
-      border-top:1px solid var(--line);
-      padding:10px 16px;
-    }
-    .footerInner{ max-width:980px; margin:0 auto; display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
-    .small{ font-size:12px; color:var(--muted); }
-    .hidden{ display:none !important; }
-  </style>
-</head>
-<body>
-<header>
-  <div class="brand">
-    <div class="logo" aria-hidden="true"></div>
-    <div>
-      <h1>Rust Rebels</h1>
-      <div class="sub">Quotes & Hours (local + Supabase sync, no GST)</div>
-    </div>
-  </div>
-</header>
-
-<main>
-  <div class="row">
-    <section class="card grow">
-      <h2>Jobs</h2>
-      <div class="toolbar">
-        <input id="search" placeholder="Search client / job / notes…" />
-        <select id="filterStatus" style="max-width:220px">
-          <option value="">All statuses</option>
-          <option value="QUOTE">Quote</option>
-          <option value="IN_PROGRESS">In Progress</option>
-          <option value="COMPLETED">Completed</option>
-          <option value="INVOICED">Invoiced</option>
-        </select>
-        <button class="btn primary" id="newJobBtn">+ New Job</button>
-      </div>
-
-      <div class="kpi" id="kpis"></div>
-      <div style="height:10px"></div>
-      <div class="jobs" id="jobList"></div>
-    </section>
-
-    <section class="card side" id="settingsCard">
-      <h2>Settings</h2>
-      <label>Default hourly rate ($/hr)</label>
-      <input id="defaultRate" type="number" step="0.01" />
-
-      <label>Business details (shown on PDFs)</label>
-      <input id="bizName" placeholder="Business name" />
-      <input id="bizPhone" placeholder="Phone" />
-      <input id="bizEmail" placeholder="Email" />
-      <input id="bizAddress" placeholder="Address" />
-
-      <div style="height:12px"></div>
-
-      <div class="toolbar">
-        <button class="btn" id="backupBtn">Export backup (JSON)</button>
-        <label class="btn ghost" style="display:inline-flex; align-items:center; gap:8px; cursor:pointer;">
-          Import backup
-          <input id="importFile" type="file" accept="application/json" style="display:none" />
-        </label>
-        <button class="btn" id="syncBtn">Sync / Login</button>
-        <button class="btn danger" id="wipeBtn">Clear all data</button>
-      </div>
-
-      <div class="small" style="margin-top:10px" id="syncStatus">
-        Sync: <b class="muted">loading…</b>
-      </div>
-
-      <div class="small" style="margin-top:10px">
-        Tip: For PDF export, open “Generate PDF” and use the iOS Share button to save/send the PDF.
-      </div>
-    </section>
-  </div>
-
-  <section class="card hidden" id="jobCard" style="margin-top:14px;">
-    <div class="toolbar" style="justify-content:space-between; align-items:center;">
-      <div>
-        <h2 id="jobHeader" style="margin:0">Job</h2>
-        <div class="sub" id="jobSub"></div>
-      </div>
-      <div class="toolbar">
-        <button class="btn ghost" id="closeJobBtn">Close</button>
-        <button class="btn danger" id="deleteJobBtn">Delete</button>
-      </div>
-    </div>
-
-    <div class="tabs" style="margin-top:12px;">
-      <button class="tab active" data-tab="details">Details</button>
-      <button class="tab" data-tab="time">Hours</button>
-      <button class="tab" data-tab="materials">Materials</button>
-      <button class="tab" data-tab="pdf">PDF</button>
-    </div>
-
-    <div id="tab-details">
-      <div class="grid2">
-        <div>
-          <label>Client name</label>
-          <input id="jobClient" />
-        </div>
-        <div>
-          <label>Status</label>
-          <select id="jobStatus">
-            <option value="QUOTE">Quote</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="COMPLETED">Completed</option>
-            <option value="INVOICED">Invoiced</option>
-          </select>
-        </div>
-      </div>
-
-      <label>Job title</label>
-      <input id="jobTitle" />
-
-      <label>Description</label>
-      <textarea id="jobDesc"></textarea>
-
-      <div class="grid2">
-        <div>
-          <label>Location (optional)</label>
-          <input id="jobLocation" />
-        </div>
-        <div>
-          <label>Hourly rate override ($/hr, optional)</label>
-          <input id="jobRate" type="number" step="0.01" placeholder="Leave blank to use default" />
-        </div>
-      </div>
-
-      <label>Notes</label>
-      <textarea id="jobNotes"></textarea>
-
-      <div style="height:12px"></div>
-      <button class="btn primary" id="saveJobBtn">Save job</button>
-    </div>
-
-    <div id="tab-time" class="hidden">
-      <h2 style="font-size:13px; margin:0 0 10px;">Add hours</h2>
-      <div class="grid2">
-        <div>
-          <label>Date</label>
-          <input id="tDate" type="date" />
-        </div>
-        <div>
-          <label>Rate used ($/hr)</label>
-          <input id="tRate" type="number" step="0.01" />
-        </div>
-      </div>
-      <div class="grid2">
-        <div>
-          <label>Start time (optional)</label>
-          <input id="tStart" type="time" />
-        </div>
-        <div>
-          <label>End time (optional)</label>
-          <input id="tEnd" type="time" />
-        </div>
-      </div>
-      <div class="grid2">
-        <div>
-          <label>OR Duration (hours)</label>
-          <input id="tDuration" type="number" step="0.01" placeholder="e.g. 2.5" />
-        </div>
-        <div>
-          <label>Break minutes</label>
-          <input id="tBreak" type="number" step="1" value="0" />
-        </div>
-      </div>
-      <label>Work description</label>
-      <input id="tDesc" placeholder="e.g. Fitment + welding" />
-      <div style="height:10px"></div>
-      <button class="btn primary" id="addTimeBtn">Add entry</button>
-
-      <div style="height:16px"></div>
-      <h2 style="font-size:13px; margin:0 0 8px;">Entries</h2>
-      <div class="pill" id="timeTotals"></div>
-      <div style="height:10px"></div>
-      <div style="overflow:auto">
-        <table id="timeTable">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Description</th>
-              <th class="right">Hours</th>
-              <th class="right">$</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="tab-materials" class="hidden">
-      <h2 style="font-size:13px; margin:0 0 10px;">Add material/expense</h2>
-      <div class="grid2">
-        <div>
-          <label>Item</label>
-          <input id="mItem" placeholder="e.g. Steel plate 6mm" />
-        </div>
-        <div>
-          <label>Quantity</label>
-          <input id="mQty" type="number" step="0.01" value="1" />
-        </div>
-      </div>
-      <div class="grid2">
-        <div>
-          <label>Unit cost ($)</label>
-          <input id="mUnit" type="number" step="0.01" value="0" />
-        </div>
-        <div>
-          <label>Sell price override (optional, $)</label>
-          <input id="mSell" type="number" step="0.01" placeholder="Leave blank = qty * unit cost" />
-        </div>
-      </div>
-      <label>Notes (optional)</label>
-      <input id="mNote" placeholder="e.g. Supplier invoice #123" />
-      <div style="height:10px"></div>
-      <button class="btn primary" id="addMatBtn">Add item</button>
-
-      <div style="height:16px"></div>
-      <h2 style="font-size:13px; margin:0 0 8px;">Items</h2>
-      <div class="pill" id="matTotals"></div>
-      <div style="height:10px"></div>
-      <div style="overflow:auto">
-        <table id="matTable">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th class="right">Qty</th>
-              <th class="right">$</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="tab-pdf" class="hidden">
-      <h2 style="font-size:13px; margin:0 0 10px;">Generate PDF</h2>
-      <div class="grid2">
-        <div>
-          <label>Document type</label>
-          <select id="pdfType">
-            <option value="QUOTE">Quote</option>
-            <option value="INVOICE">Invoice / Work Summary</option>
-          </select>
-        </div>
-        <div>
-          <label>Show itemised entries</label>
-          <select id="pdfItemised">
-            <option value="YES">Yes</option>
-            <option value="NO">No (totals only)</option>
-          </select>
-        </div>
-      </div>
-      <label>Group hours by day</label>
-      <select id="pdfGroupDays">
-        <option value="NO">No</option>
-        <option value="YES">Yes</option>
-      </select>
-
-      <div style="height:12px"></div>
-      <button class="btn primary" id="genPdfBtn">Generate PDF</button>
-
-      <div class="small" style="margin-top:10px">
-        On iPhone/iPad: after it opens, tap Share → “Save to Files” to store the PDF, or share to email/WhatsApp.
-      </div>
-    </div>
-
-  </section>
-</main>
-
-<footer>
-  <div class="footerInner">
-    <div class="small">Local storage + Sync. No GST. Default rate: <b id="rateFooter">$75</b>/hr</div>
-    <div class="toolbar">
-      <button class="btn" id="exportCsvBtn">Export jobs (CSV)</button>
-    </div>
-  </div>
-</footer>
-
-<!-- Login modal (NOT blocking: data can still show) -->
-<div id="authModal" style="position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:16px; background:rgba(0,0,0,.55); backdrop-filter: blur(10px); z-index:9999;">
-  <div style="max-width:420px; width:100%; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:var(--shadow);">
-    <h2 style="margin:0 0 6px; font-size:16px;">Rust Rebels Sync Login</h2>
-    <div style="color:var(--muted); font-size:12px; margin-bottom:10px;">
-      Anyone can view data. Login enables write/sync if your Supabase rules require it.
-    </div>
-
-    <label>Email</label>
-    <input id="authEmail" type="email" placeholder="you@example.com" />
-
-    <label>Password</label>
-    <input id="authPassword" type="password" placeholder="••••••••" />
-
-    <div style="height:12px;"></div>
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <button class="btn primary" id="btnLogin">Log in</button>
-      <button class="btn" id="btnSignup">Sign up</button>
-      <button class="btn ghost" id="btnCloseAuth">Close</button>
-    </div>
-
-    <div id="authMsg" style="margin-top:10px; font-size:12px; color:var(--muted);"></div>
-  </div>
-</div>
-
-<!-- Load Supabase BEFORE app script -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
 (() => {
   /***********************
-   * 0) QUICK ERROR HUD  *
+   * SUPABASE (OPTIONAL) *
    ***********************/
-  window.addEventListener("error", (e) => {
-    console.error(e);
-    const el = document.getElementById("syncStatus");
-    if(el) el.innerHTML = `Sync: <b style="color:#ff5a5f">JS error</b> (open console)`;
-  });
-  window.addEventListener("unhandledrejection", (e) => {
-    console.error(e);
-    const el = document.getElementById("syncStatus");
-    if(el) el.innerHTML = `Sync: <b style="color:#ff5a5f">Promise error</b> (open console)`;
-  });
-
-  /***********************
-   * 1) SETTINGS         *
-   ***********************/
-  const STORAGE_KEY = "rr_quotes_hours_v1"; // keep your working local key
-
-  // Supabase (PUBLIC data model: no user_id filters in code)
   const SUPABASE_URL = "https://byeugnubtwdnlyzxcegf.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_zc6vOE2kCKmOLOLQUr1P5Q_nQHO1LzI";
 
-  const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+  // If you truly want "anyone can see everything and write if password ok":
+  // You STILL need auth for writes if RLS is enabled. If you disable RLS,
+  // then anyone can write without login (not recommended).
+  // This code: read + write only when logged in. Otherwise local-only.
+
+  const sb = (window.supabase && SUPABASE_URL.includes("http") && SUPABASE_ANON_KEY.includes("ey"))
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+  let currentUser = null;
+
+  // Show text in footer so it never nags with popups
+  function setSyncText(html){
+    const el = document.getElementById("syncStatus");
+    if(el) el.innerHTML = html;
+  }
+
+  function canWriteCloud(){
+    return !!(sb && currentUser);
+  }
+
+  async function initAuthPassive(){
+    if(!sb){
+      setSyncText(`Sync: <b>off</b> • <span class="muted">Supabase not configured</span>`);
+      return;
+    }
+    const { data } = await sb.auth.getSession();
+    currentUser = data?.session?.user || null;
+
+    if(currentUser){
+      setSyncText(`Sync: <b>on</b> • logged in as <span class="muted">${currentUser.email || "user"}</span>`);
+      await cloudPullAll(); // load from cloud into local state
+      renderAll();
+      startRealtime();
+    } else {
+      setSyncText(`Sync: <b>local</b> • <span class="muted">tap Sync/Login to enable</span>`);
+    }
+  }
+
+  async function loginFlow(){
+    if(!sb){
+      alert("Supabase not configured. Add your URL + anon key.");
+      return;
+    }
+    const email = prompt("Email:");
+    if(!email) return;
+    const password = prompt("Password:");
+    if(!password) return;
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if(error){ alert(error.message); return; }
+
+    currentUser = data.user;
+    setSyncText(`Sync: <b>on</b> • logged in as <span class="muted">${currentUser.email || "user"}</span>`);
+    await cloudPullAll();
+    renderAll();
+    startRealtime();
+  }
+
+  async function logoutFlow(){
+    if(!sb) return;
+    await sb.auth.signOut();
+    currentUser = null;
+    setSyncText(`Sync: <b>local</b> • <span class="muted">logged out</span>`);
+  }
+
+  /***********************
+   * 1) YOUR ORIGINAL APP *
+   ***********************/
+  const STORAGE_KEY = "rr_quotes_hours_v1";
 
   const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
 
@@ -448,14 +89,11 @@
     const [sh, sm] = start.split(":").map(Number);
     const [eh, em] = end.split(":").map(Number);
     let mins = (eh*60+em) - (sh*60+sm);
-    if(mins < 0) mins += 24*60; // cross midnight
+    if(mins < 0) mins += 24*60;
     mins -= Number(breakMin || 0);
     return Math.max(0, mins/60);
   };
 
-  /***********************
-   * 2) LOCAL STATE      *
-   ***********************/
   const state = loadState();
 
   function loadState(){
@@ -464,10 +102,7 @@
       try { return JSON.parse(raw); } catch {}
     }
     return {
-      settings: {
-        defaultRate: 75,
-        biz: { name: "Rust Rebels", phone:"", email:"", address:"" }
-      },
+      settings: { defaultRate: 75, biz: { name: "Rust Rebels", phone:"", email:"", address:"" } },
       jobs: []
     };
   }
@@ -476,9 +111,7 @@
     renderAll();
   }
 
-  /***********************
-   * 3) DOM ELEMENTS     *
-   ***********************/
+  // Elements
   const jobList = document.getElementById("jobList");
   const jobCard = document.getElementById("jobCard");
   const settingsCard = document.getElementById("settingsCard");
@@ -501,17 +134,6 @@
   const wipeBtn = document.getElementById("wipeBtn");
   const importFile = document.getElementById("importFile");
   const exportCsvBtn = document.getElementById("exportCsvBtn");
-  const syncBtn = document.getElementById("syncBtn");
-  const syncStatus = document.getElementById("syncStatus");
-
-  // Auth modal
-  const authModal = document.getElementById("authModal");
-  const authEmail = document.getElementById("authEmail");
-  const authPassword = document.getElementById("authPassword");
-  const authMsg = document.getElementById("authMsg");
-  const btnLogin = document.getElementById("btnLogin");
-  const btnSignup = document.getElementById("btnSignup");
-  const btnCloseAuth = document.getElementById("btnCloseAuth");
 
   // Job fields
   const jobHeader = document.getElementById("jobHeader");
@@ -563,9 +185,6 @@
 
   let selectedJobId = null;
 
-  /***********************
-   * 4) HELPERS          *
-   ***********************/
   function getJob(id){ return state.jobs.find(j => j.id === id); }
 
   function jobRateResolved(job){
@@ -576,19 +195,14 @@
   function calcLabor(job){
     const entries = job.timeEntries || [];
     let totalH = 0, total$ = 0;
-    for(const e of entries){
-      totalH += Number(e.hours || 0);
-      total$ += Number(e.cost || 0);
-    }
+    for(const e of entries){ totalH += Number(e.hours || 0); total$ += Number(e.cost || 0); }
     return { hours: totalH, cost: total$ };
   }
 
   function calcMaterials(job){
     const items = job.materials || [];
     let total = 0;
-    for(const it of items){
-      total += Number(it.total || 0);
-    }
+    for(const it of items){ total += Number(it.total || 0); }
     return { cost: total };
   }
 
@@ -603,214 +217,6 @@
     return status==="IN_PROGRESS" ? "In Progress" : status.charAt(0)+status.slice(1).toLowerCase().replace("_"," ");
   }
 
-  function setSyncText(html){
-    if(syncStatus) syncStatus.innerHTML = html;
-  }
-
-  /***********************
-   * 5) SUPABASE SYNC    *
-   ***********************/
-  let currentUser = null;
-  let rtStarted = false;
-
-  function showAuth(show, msg=""){
-    if(!authModal) return;
-    authModal.style.display = show ? "flex" : "none";
-    if(authMsg) authMsg.textContent = msg;
-  }
-
-  async function initAuthAndSync(){
-    if(!sb){
-      setSyncText(`Sync: <b class="muted">offline (no Supabase)</b>`);
-      return;
-    }
-
-    // Get session (if any)
-    const { data } = await sb.auth.getSession();
-    currentUser = data?.session?.user || null;
-
-    setSyncText(`Sync: <b>${currentUser ? "logged in" : "view-only"}</b> • <span class="muted">pulling cloud…</span>`);
-
-    // Always allow viewing cloud data (if your RLS allows anon read)
-    await cloudPullAll();
-    renderAll();
-    startRealtime();
-
-    setSyncText(`Sync: <b>${currentUser ? "logged in" : "view-only"}</b> • <span class="muted">live</span>`);
-  }
-
-  async function cloudPullAll(){
-    if(!sb) return;
-
-    const { data: jobs, error: ej } = await sb
-      .from("jobs")
-      .select("*")
-      .order("updated_at", { ascending: false });
-
-    if(ej){
-      console.error(ej);
-      setSyncText(`Sync: <b style="color:#ff5a5f">pull failed</b> (check RLS)`);
-      return;
-    }
-
-    const { data: te, error: et } = await sb.from("time_entries").select("*");
-    const { data: ma, error: em } = await sb.from("materials").select("*");
-    if(et) console.error(et);
-    if(em) console.error(em);
-
-    const timeByJob = {};
-    (te || []).forEach(e => {
-      const jobId = e.job_id;
-      timeByJob[jobId] = timeByJob[jobId] || [];
-      timeByJob[jobId].push({
-        id: e.id,
-        date: e.work_date,
-        desc: e.description || "",
-        hours: Number(e.hours || 0),
-        rate: Number(e.rate || 0),
-        cost: Number(e.cost || 0),
-        start: "",
-        end: "",
-        breakMin: 0
-      });
-    });
-
-    const matsByJob = {};
-    (ma || []).forEach(m => {
-      const jobId = m.job_id;
-      matsByJob[jobId] = matsByJob[jobId] || [];
-      matsByJob[jobId].push({
-        id: m.id,
-        item: m.item || "",
-        qty: Number(m.qty || 0),
-        unit: Number(m.unit_cost || 0),
-        sell: null,
-        total: Number(m.total || 0),
-        note: m.note || ""
-      });
-    });
-
-    state.jobs = (jobs || []).map(j => ({
-      id: j.id,
-      client: j.client || "",
-      title: j.title || "",
-      desc: j.description || "",
-      location: j.location || "",
-      notes: j.notes || "",
-      status: j.status || "QUOTE",
-      rateOverride: (j.rate_override ?? ""),
-      createdAt: j.created_at,
-      updatedAt: j.updated_at,
-      timeEntries: timeByJob[j.id] || [],
-      materials: matsByJob[j.id] || []
-    }));
-
-    saveState(); // persist cloud mirror locally
-  }
-
-  function startRealtime(){
-    if(!sb || rtStarted) return;
-    rtStarted = true;
-
-    sb.channel("rr-sync")
-      .on("postgres_changes", { event: "*", schema: "public", table: "jobs" }, () => cloudPullAll().then(renderAll))
-      .on("postgres_changes", { event: "*", schema: "public", table: "time_entries" }, () => cloudPullAll().then(renderAll))
-      .on("postgres_changes", { event: "*", schema: "public", table: "materials" }, () => cloudPullAll().then(renderAll))
-      .subscribe();
-  }
-
-  async function cloudUpsertJob(job){
-    if(!sb) return;
-    const payload = {
-      id: job.id,
-      client: job.client,
-      title: job.title,
-      description: job.desc,
-      location: job.location,
-      notes: job.notes,
-      status: job.status,
-      rate_override: (job.rateOverride === "" ? null : job.rateOverride),
-      updated_at: new Date().toISOString()
-    };
-    const { error } = await sb.from("jobs").upsert(payload);
-    if(error){
-      console.error(error);
-      showAuth(true, "Write blocked. Log in if required by your Supabase rules.");
-      throw error;
-    }
-  }
-
-  async function cloudDeleteJob(jobId){
-    if(!sb) return;
-    const { error } = await sb.from("jobs").delete().eq("id", jobId);
-    if(error){
-      console.error(error);
-      showAuth(true, "Delete blocked. Log in if required by your Supabase rules.");
-      throw error;
-    }
-  }
-
-  async function cloudInsertTime(jobId, entry){
-    if(!sb) return;
-    const payload = {
-      id: entry.id,
-      job_id: jobId,
-      work_date: entry.date,
-      description: entry.desc,
-      hours: entry.hours,
-      rate: entry.rate,
-      cost: entry.cost
-    };
-    const { error } = await sb.from("time_entries").insert(payload);
-    if(error){
-      console.error(error);
-      showAuth(true, "Write blocked. Log in if required by your Supabase rules.");
-      throw error;
-    }
-  }
-
-  async function cloudDeleteTime(entryId){
-    if(!sb) return;
-    const { error } = await sb.from("time_entries").delete().eq("id", entryId);
-    if(error){
-      console.error(error);
-      showAuth(true, "Delete blocked. Log in if required by your Supabase rules.");
-      throw error;
-    }
-  }
-
-  async function cloudInsertMat(jobId, item){
-    if(!sb) return;
-    const payload = {
-      id: item.id,
-      job_id: jobId,
-      item: item.item,
-      qty: item.qty,
-      unit_cost: item.unit,
-      total: item.total,
-      note: item.note
-    };
-    const { error } = await sb.from("materials").insert(payload);
-    if(error){
-      console.error(error);
-      showAuth(true, "Write blocked. Log in if required by your Supabase rules.");
-      throw error;
-    }
-  }
-
-  async function cloudDeleteMat(itemId){
-    if(!sb) return;
-    const { error } = await sb.from("materials").delete().eq("id", itemId);
-    if(error){
-      console.error(error);
-      showAuth(true, "Delete blocked. Log in if required by your Supabase rules.");
-      throw error;
-    }
-  }
-
-  /***********************
-   * 6) SETTINGS UI      *
-   ***********************/
   function initSettings(){
     defaultRate.value = state.settings.defaultRate ?? 75;
     bizName.value = state.settings.biz?.name ?? "Rust Rebels";
@@ -820,22 +226,21 @@
     rateFooter.textContent = "$" + money(state.settings.defaultRate ?? 75);
   }
 
-  defaultRate.addEventListener("input", () => {
+  // settings events
+  defaultRate.addEventListener("input", async () => {
     state.settings.defaultRate = Number(defaultRate.value || 0);
     saveState();
+    await cloudUpsertSettings(); // optional, safe
   });
-
   for(const [el, key] of [[bizName,"name"],[bizPhone,"phone"],[bizEmail,"email"],[bizAddress,"address"]]){
-    el.addEventListener("input", () => {
+    el.addEventListener("input", async () => {
       state.settings.biz = state.settings.biz || {};
       state.settings.biz[key] = el.value;
       saveState();
+      await cloudUpsertSettings(); // optional, safe
     });
   }
 
-  /***********************
-   * 7) JOB ACTIONS      *
-   ***********************/
   newJobBtn.addEventListener("click", async () => {
     const now = new Date().toISOString();
     const job = {
@@ -857,8 +262,8 @@
     saveState();
     openJob(job.id);
 
-    // push to cloud (best-effort)
-    try{ await cloudUpsertJob(job); } catch {}
+    // cloud save only if logged in
+    await cloudUpsertJob(job).catch(console.error);
   });
 
   closeJobBtn.addEventListener("click", () => { selectedJobId = null; renderAll(); });
@@ -871,7 +276,7 @@
       state.jobs = state.jobs.filter(j => j.id !== id);
       selectedJobId = null;
       saveState();
-      try{ await cloudDeleteJob(id); } catch {}
+      await cloudDeleteJob(id).catch(console.error);
     }
   });
 
@@ -887,14 +292,13 @@
     job.rateOverride = jobRate.value === "" ? "" : Number(jobRate.value);
     job.updatedAt = new Date().toISOString();
     saveState();
-    try{ await cloudUpsertJob(job); } catch {}
+    await cloudUpsertJob(job).catch(console.error);
     alert("Saved.");
   });
 
   search.addEventListener("input", renderAll);
   filterStatus.addEventListener("change", renderAll);
 
-  // Time add
   addTimeBtn.addEventListener("click", async () => {
     const job = getJob(selectedJobId);
     if(!job) return;
@@ -936,13 +340,10 @@
     tStart.value = ""; tEnd.value = ""; tDuration.value = ""; tDesc.value = ""; tBreak.value = "0";
     saveState();
 
-    try{
-      await cloudUpsertJob(job);
-      await cloudInsertTime(job.id, entry);
-    } catch {}
+    await cloudUpsertJob(job).catch(console.error);
+    await cloudInsertTime(job.id, entry).catch(console.error);
   });
 
-  // Materials add
   addMatBtn.addEventListener("click", async () => {
     const job = getJob(selectedJobId);
     if(!job) return;
@@ -955,7 +356,7 @@
     const sellOverride = (mSell.value === "" ? null : Number(mSell.value));
     const total = sellOverride !== null ? sellOverride : qty * unit;
 
-    const it = {
+    const mat = {
       id: uid(),
       item,
       qty: Number(qty.toFixed(2)),
@@ -965,21 +366,17 @@
       note: mNote.value.trim()
     };
 
-    job.materials.push(it);
+    job.materials.push(mat);
     job.updatedAt = new Date().toISOString();
 
     mItem.value=""; mQty.value="1"; mUnit.value="0"; mSell.value=""; mNote.value="";
     saveState();
 
-    try{
-      await cloudUpsertJob(job);
-      await cloudInsertMat(job.id, it);
-    } catch {}
+    await cloudUpsertJob(job).catch(console.error);
+    await cloudInsertMat(job.id, mat).catch(console.error);
   });
 
-  /***********************
-   * 8) TABS             *
-   ***********************/
+  // Tabs
   tabs.forEach(btn => btn.addEventListener("click", () => {
     tabs.forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
@@ -987,9 +384,7 @@
     Object.entries(tabPanels).forEach(([k, el]) => el.classList.toggle("hidden", k !== name));
   }));
 
-  /***********************
-   * 9) BACKUP / WIPE     *
-   ***********************/
+  // Backup import/export
   backupBtn.addEventListener("click", () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
     downloadBlob(blob, `rust-rebels-backup-${new Date().toISOString().slice(0,10)}.json`);
@@ -1002,7 +397,7 @@
       const txt = await f.text();
       const obj = JSON.parse(txt);
       if(!obj || !obj.settings || !obj.jobs) throw new Error("Invalid backup");
-      if(confirm("Import backup? This will replace current data on THIS device.")){
+      if(confirm("Import backup? This will replace current data.")){
         state.settings = obj.settings;
         state.jobs = obj.jobs;
         selectedJobId = null;
@@ -1016,13 +411,12 @@
   });
 
   wipeBtn.addEventListener("click", () => {
-    if(confirm("Clear ALL local data (jobs, hours, materials, settings)?")){
+    if(confirm("Clear ALL data (jobs, hours, materials, settings)?")){
       localStorage.removeItem(STORAGE_KEY);
       location.reload();
     }
   });
 
-  // CSV export (basic)
   exportCsvBtn.addEventListener("click", () => {
     const rows = [];
     rows.push(["JobID","Client","Title","Status","Rate","LaborHours","LaborCost","MaterialsCost","Total","UpdatedAt"].join(","));
@@ -1031,15 +425,8 @@
       const labor = calcLabor(j);
       const mats = calcMaterials(j);
       const total = labor.cost + mats.cost;
-      rows.push([
-        j.id,
-        csv(j.client), csv(j.title), j.status,
-        r,
-        labor.hours.toFixed(2),
-        labor.cost.toFixed(2),
-        mats.cost.toFixed(2),
-        total.toFixed(2),
-        j.updatedAt
+      rows.push([j.id, csv(j.client), csv(j.title), j.status, r,
+        labor.hours.toFixed(2), labor.cost.toFixed(2), mats.cost.toFixed(2), total.toFixed(2), j.updatedAt
       ].join(","));
     }
     const blob = new Blob([rows.join("\n")], {type:"text/csv"});
@@ -1050,7 +437,6 @@
     const x = (s ?? "").toString().replaceAll('"','""');
     return `"${x}"`;
   }
-
   function downloadBlob(blob, filename){
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -1061,9 +447,7 @@
     setTimeout(()=>URL.revokeObjectURL(url), 1500);
   }
 
-  /***********************
-   * 10) PDF (unchanged) *
-   ***********************/
+  // PDF generation (your existing code kept)
   genPdfBtn.addEventListener("click", () => {
     const job = getJob(selectedJobId);
     if(!job) return;
@@ -1134,14 +518,9 @@
     const timeTable = () => {
       if(!itemised) return "";
       if(timeEntries.length === 0) return `<div class="muted">No labour entries.</div>`;
-
       if(groupDays){
         const rows = Object.keys(grouped).map(d => `
-          <tr>
-            <td>${escapeHtml(d)}</td>
-            <td class="right">${money(grouped[d].hours)}</td>
-            <td class="right">$${money(grouped[d].cost)}</td>
-          </tr>
+          <tr><td>${escapeHtml(d)}</td><td class="right">${money(grouped[d].hours)}</td><td class="right">$${money(grouped[d].cost)}</td></tr>
         `).join("");
         return `
           <div class="box">
@@ -1152,25 +531,19 @@
             </table>
           </div>
         `;
-      } else {
-        const rows = timeEntries.map(e => `
-          <tr>
-            <td>${escapeHtml(e.date || "")}</td>
-            <td>${escapeHtml(e.desc || "")}</td>
-            <td class="right">${money(e.hours || 0)}</td>
-            <td class="right">$${money(e.cost || 0)}</td>
-          </tr>
-        `).join("");
-        return `
-          <div class="box">
-            <div class="h">Labour (itemised)</div>
-            <table>
-              <thead><tr><th>Date</th><th>Description</th><th class="right">Hours</th><th class="right">$</th></tr></thead>
-              <tbody>${rows}</tbody>
-            </table>
-          </div>
-        `;
       }
+      const rows = timeEntries.map(e => `
+        <tr><td>${escapeHtml(e.date||"")}</td><td>${escapeHtml(e.desc||"")}</td><td class="right">${money(e.hours||0)}</td><td class="right">$${money(e.cost||0)}</td></tr>
+      `).join("");
+      return `
+        <div class="box">
+          <div class="h">Labour (itemised)</div>
+          <table>
+            <thead><tr><th>Date</th><th>Description</th><th class="right">Hours</th><th class="right">$</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
     };
 
     const matTable = () => {
@@ -1178,9 +551,9 @@
       if(materials.length === 0) return `<div class="muted">No materials/expenses.</div>`;
       const rows = materials.map(m => `
         <tr>
-          <td>${escapeHtml(m.item || "")}${m.note ? `<div class="muted">${escapeHtml(m.note)}</div>` : ""}</td>
-          <td class="right">${money(m.qty || 0)}</td>
-          <td class="right">$${money(m.total || 0)}</td>
+          <td>${escapeHtml(m.item||"")}${m.note ? `<div class="muted">${escapeHtml(m.note)}</div>` : ""}</td>
+          <td class="right">${money(m.qty||0)}</td>
+          <td class="right">$${money(m.total||0)}</td>
         </tr>
       `).join("");
       return `
@@ -1195,54 +568,42 @@
     };
 
     win.document.write(`
-      <html>
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>${escapeHtml(title)} - ${escapeHtml(job.title || "Job")}</title>
-        <style>
-          body{ font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial; margin: 28px; color:#111; }
-          .top{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
-          .bn{ font-size: 18px; font-weight: 800; letter-spacing:.2px; }
-          .muted{ color:#555; font-size:12px; }
-          .doc{ text-align:right; }
-          .doc .t{ font-size: 20px; font-weight: 900; }
-          .doc .d{ font-size:12px; color:#555; }
-          .box{ margin-top: 16px; padding: 14px; border: 1px solid #ddd; border-radius: 12px; }
-          .h{ font-weight: 900; margin-bottom: 8px; }
-          table{ width:100%; border-collapse:collapse; }
-          th, td{ font-size:12px; padding: 8px 6px; border-bottom:1px solid #eee; vertical-align:top; }
-          th{ color:#555; text-align:left; }
-          .right{ text-align:right; }
-          .totals{ margin-top: 16px; padding: 14px; border: 1px solid #ddd; border-radius: 12px; }
-          .totals .row{ display:flex; justify-content:space-between; padding: 6px 0; font-size: 13px; }
-          .totals .grand{ border-top:1px dashed #ccc; margin-top: 6px; padding-top: 10px; font-size: 15px; }
-          .sp{ height:8px; }
-          @media print{ body{ margin: 0.5cm; } }
-        </style>
-      </head>
-      <body>
+      <html><head><meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>${escapeHtml(title)} - ${escapeHtml(job.title || "Job")}</title>
+      <style>
+        body{ font-family:-apple-system,system-ui,Segoe UI,Roboto,Arial; margin:28px; color:#111; }
+        .top{ display:flex; justify-content:space-between; gap:16px; }
+        .bn{ font-size:18px; font-weight:800; }
+        .muted{ color:#555; font-size:12px; }
+        .doc{ text-align:right; }
+        .doc .t{ font-size:20px; font-weight:900; }
+        .box{ margin-top:16px; padding:14px; border:1px solid #ddd; border-radius:12px; }
+        .h{ font-weight:900; margin-bottom:8px; }
+        table{ width:100%; border-collapse:collapse; }
+        th,td{ font-size:12px; padding:8px 6px; border-bottom:1px solid #eee; vertical-align:top; }
+        th{ color:#555; text-align:left; }
+        .right{ text-align:right; }
+        .totals{ margin-top:16px; padding:14px; border:1px solid #ddd; border-radius:12px; }
+        .totals .row{ display:flex; justify-content:space-between; padding:6px 0; font-size:13px; }
+        .totals .grand{ border-top:1px dashed #ccc; margin-top:6px; padding-top:10px; font-size:15px; }
+        @media print{ body{ margin:0.5cm; } }
+      </style></head><body>
         <div class="top">
           ${bizBlock}
           <div class="doc">
             <div class="t">${escapeHtml(title)}</div>
-            <div class="d">Date: ${new Date().toISOString().slice(0,10)}</div>
+            <div class="muted">Date: ${new Date().toISOString().slice(0,10)}</div>
           </div>
         </div>
-
         ${jobBlock}
         ${timeTable()}
         ${matTable()}
         ${totalsBlock}
         ${acceptance}
-
         <div class="muted" style="margin-top:14px">No GST applied.</div>
-
-        <script>
-          setTimeout(() => { window.print(); }, 250);
-        <\/script>
-      </body>
-      </html>
+        <script>setTimeout(() => window.print(), 250);<\/script>
+      </body></html>
     `);
     win.document.close();
   });
@@ -1256,9 +617,6 @@
       .replaceAll("'","&#039;");
   }
 
-  /***********************
-   * 11) RENDERING       *
-   ***********************/
   function openJob(id){
     selectedJobId = id;
     renderAll();
@@ -1267,8 +625,6 @@
 
   function renderKPIs(){
     const visible = filteredJobs();
-    const totalJobs = visible.length;
-
     let active = 0, quoted = 0, completed = 0;
     let total$ = 0;
     for(const j of visible){
@@ -1279,9 +635,8 @@
       const mats = calcMaterials(j);
       total$ += (labor.cost + mats.cost);
     }
-
     kpis.innerHTML = `
-      <span class="pill">Jobs: <b>${totalJobs}</b></span>
+      <span class="pill">Jobs: <b>${visible.length}</b></span>
       <span class="pill">Quotes: <b>${quoted}</b></span>
       <span class="pill">Active: <b>${active}</b></span>
       <span class="pill">Done: <b>${completed}</b></span>
@@ -1294,9 +649,7 @@
     const st = filterStatus.value || "";
     return state.jobs.filter(j => {
       const hay = `${j.client} ${j.title} ${j.desc} ${j.notes} ${j.location}`.toLowerCase();
-      const okQ = !q || hay.includes(q);
-      const okS = !st || j.status === st;
-      return okQ && okS;
+      return (!q || hay.includes(q)) && (!st || j.status === st);
     });
   }
 
@@ -1331,7 +684,6 @@
     const job = getJob(selectedJobId);
     jobCard.classList.toggle("hidden", !job);
     settingsCard.classList.toggle("hidden", !!job);
-
     if(!job) return;
 
     jobHeader.textContent = job.title || "Job";
@@ -1351,8 +703,7 @@
     renderTime(job);
     renderMats(job);
 
-    if(job.status === "QUOTE") pdfType.value = "QUOTE";
-    else pdfType.value = "INVOICE";
+    pdfType.value = (job.status === "QUOTE") ? "QUOTE" : "INVOICE";
   }
 
   function renderTime(job){
@@ -1382,7 +733,8 @@
         job.timeEntries = (job.timeEntries || []).filter(x => x.id !== id);
         job.updatedAt = new Date().toISOString();
         saveState();
-        try{ await cloudDeleteTime(id); await cloudUpsertJob(job); } catch {}
+        await cloudDeleteTime(id).catch(console.error);
+        await cloudUpsertJob(job).catch(console.error);
       });
     });
   }
@@ -1411,7 +763,8 @@
         job.materials = (job.materials || []).filter(x => x.id !== id);
         job.updatedAt = new Date().toISOString();
         saveState();
-        try{ await cloudDeleteMat(id); await cloudUpsertJob(job); } catch {}
+        await cloudDeleteMat(id).catch(console.error);
+        await cloudUpsertJob(job).catch(console.error);
       });
     });
   }
@@ -1423,51 +776,7 @@
     renderSelectedJob();
   }
 
-  /***********************
-   * 12) AUTH BUTTONS    *
-   ***********************/
-  if(syncBtn){
-    syncBtn.addEventListener("click", () => showAuth(true, ""));
-  }
-  if(btnCloseAuth){
-    btnCloseAuth.addEventListener("click", () => showAuth(false, ""));
-  }
-
-  if(btnSignup){
-    btnSignup.addEventListener("click", async () => {
-      if(!sb) return;
-      authMsg.textContent = "Signing up…";
-      const email = authEmail.value.trim();
-      const password = authPassword.value;
-      const { error } = await sb.auth.signUp({ email, password });
-      authMsg.textContent = error ? error.message : "Signed up. Now log in.";
-    });
-  }
-
-  if(btnLogin){
-    btnLogin.addEventListener("click", async () => {
-      if(!sb) return;
-      authMsg.textContent = "Logging in…";
-      const email = authEmail.value.trim();
-      const password = authPassword.value;
-      const { data, error } = await sb.auth.signInWithPassword({ email, password });
-      if(error){
-        authMsg.textContent = error.message;
-        return;
-      }
-      currentUser = data.user;
-      showAuth(false, "");
-      setSyncText(`Sync: <b>logged in</b> • <span class="muted">pulling cloud…</span>`);
-      await cloudPullAll();
-      renderAll();
-      startRealtime();
-      setSyncText(`Sync: <b>logged in</b> • <span class="muted">live</span>`);
-    });
-  }
-
-  /***********************
-   * 13) FIRST RUN SEED  *
-   ***********************/
+  // Seed
   if(state.jobs.length === 0){
     const now = new Date().toISOString();
     state.jobs.push({
@@ -1492,10 +801,177 @@
     renderAll();
   }
 
-  // Start sync (non-blocking)
-  initAuthAndSync();
+  /***********************
+   * 2) CLOUD FUNCTIONS  *
+   ***********************/
+  async function cloudPullAll(){
+    if(!sb) return;
+
+    // If not logged in, we do nothing (keep local)
+    const { data } = await sb.auth.getSession();
+    currentUser = data?.session?.user || null;
+    if(!currentUser) return;
+
+    const { data: jobs, error: ej } = await sb.from("jobs").select("*").order("updated_at", { ascending:false });
+    if(ej){ console.error(ej); return; }
+
+    const { data: te } = await sb.from("time_entries").select("*");
+    const { data: ma } = await sb.from("materials").select("*");
+
+    const timeByJob = {};
+    (te || []).forEach(e => {
+      timeByJob[e.job_id] = timeByJob[e.job_id] || [];
+      timeByJob[e.job_id].push({
+        id: e.id,
+        date: e.work_date,
+        desc: e.description || "",
+        hours: Number(e.hours || 0),
+        rate: Number(e.rate || 0),
+        cost: Number(e.cost || 0),
+        start:"", end:"", breakMin:0
+      });
+    });
+
+    const matsByJob = {};
+    (ma || []).forEach(m => {
+      matsByJob[m.job_id] = matsByJob[m.job_id] || [];
+      matsByJob[m.job_id].push({
+        id: m.id,
+        item: m.item || "",
+        qty: Number(m.qty || 0),
+        unit: Number(m.unit_cost || 0),
+        sell: null,
+        total: Number(m.total || 0),
+        note: m.note || ""
+      });
+    });
+
+    state.jobs = (jobs || []).map(j => ({
+      id: j.id,
+      client: j.client || "",
+      title: j.title || "",
+      desc: j.description || "",
+      location: j.location || "",
+      notes: j.notes || "",
+      status: j.status || "QUOTE",
+      rateOverride: (j.rate_override ?? ""),
+      createdAt: j.created_at,
+      updatedAt: j.updated_at,
+      timeEntries: timeByJob[j.id] || [],
+      materials: matsByJob[j.id] || []
+    }));
+
+    saveState();
+  }
+
+  async function cloudUpsertJob(job){
+    if(!canWriteCloud()) return;
+    const payload = {
+      id: job.id,
+      client: job.client,
+      title: job.title,
+      description: job.desc,
+      location: job.location,
+      notes: job.notes,
+      status: job.status,
+      rate_override: (job.rateOverride === "" ? null : job.rateOverride),
+      updated_at: new Date().toISOString()
+    };
+    const { error } = await sb.from("jobs").upsert(payload);
+    if(error) throw error;
+  }
+
+  async function cloudDeleteJob(jobId){
+    if(!canWriteCloud()) return;
+    const { error } = await sb.from("jobs").delete().eq("id", jobId);
+    if(error) throw error;
+  }
+
+  async function cloudInsertTime(jobId, entry){
+    if(!canWriteCloud()) return;
+    const { error } = await sb.from("time_entries").insert({
+      id: entry.id,
+      job_id: jobId,
+      work_date: entry.date,
+      description: entry.desc,
+      hours: entry.hours,
+      rate: entry.rate,
+      cost: entry.cost
+    });
+    if(error) throw error;
+  }
+
+  async function cloudDeleteTime(entryId){
+    if(!canWriteCloud()) return;
+    const { error } = await sb.from("time_entries").delete().eq("id", entryId);
+    if(error) throw error;
+  }
+
+  async function cloudInsertMat(jobId, item){
+    if(!canWriteCloud()) return;
+    const { error } = await sb.from("materials").insert({
+      id: item.id,
+      job_id: jobId,
+      item: item.item,
+      qty: item.qty,
+      unit_cost: item.unit,
+      total: item.total,
+      note: item.note
+    });
+    if(error) throw error;
+  }
+
+  async function cloudDeleteMat(itemId){
+    if(!canWriteCloud()) return;
+    const { error } = await sb.from("materials").delete().eq("id", itemId);
+    if(error) throw error;
+  }
+
+  async function cloudUpsertSettings(){
+    // optional: store settings later if you add a settings table
+    return;
+  }
+
+  // Realtime (pull on change)
+  let rtStarted = false;
+  function startRealtime(){
+    if(!canWriteCloud() || rtStarted) return;
+    rtStarted = true;
+    sb.channel("rr-sync")
+      .on("postgres_changes", { event:"*", schema:"public", table:"jobs" }, () => cloudPullAll().then(renderAll))
+      .on("postgres_changes", { event:"*", schema:"public", table:"time_entries" }, () => cloudPullAll().then(renderAll))
+      .on("postgres_changes", { event:"*", schema:"public", table:"materials" }, () => cloudPullAll().then(renderAll))
+      .subscribe();
+  }
+
+  /***********************
+   * 3) ADD FOOTER BUTTONS
+   ***********************/
+  // Add two buttons into footer (no HTML changes needed)
+  const footerToolbar = document.querySelector("footer .toolbar");
+  if(footerToolbar){
+    const btnSync = document.createElement("button");
+    btnSync.className = "btn ghost";
+    btnSync.textContent = "Sync / Login";
+    btnSync.onclick = () => loginFlow();
+
+    const btnLogout = document.createElement("button");
+    btnLogout.className = "btn ghost";
+    btnLogout.textContent = "Logout";
+    btnLogout.onclick = () => logoutFlow();
+
+    footerToolbar.prepend(btnLogout);
+    footerToolbar.prepend(btnSync);
+
+    const status = document.createElement("div");
+    status.id = "syncStatus";
+    status.className = "small";
+    status.style.marginTop = "6px";
+    footerToolbar.parentElement.appendChild(status);
+  }
+
+  // start passive auth check (no popups)
+  initAuthPassive().catch(console.error);
 
 })();
 </script>
-</body>
-</html>
